@@ -1,0 +1,21 @@
+---
+- name: Ensure nextcloud namespace exists
+  command: "kubectl create namespace {{ helm_namespace }} --dry-run=client -o yaml | kubectl apply -f -"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+
+- name: Transfer Helm values to remote server
+  template:
+    src: values.yaml.j2
+    dest: /tmp/nextcloud_values.yaml
+
+- name: Deploy Nextcloud via Helm
+  command: "helm upgrade --install {{ helm_release_name }} nextcloud/nextcloud --namespace {{ helm_namespace }} --version {{ helm_chart_version }} -f /tmp/nextcloud_values.yaml"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: helm_deploy
+
+- name: Display Helm Deploy Output
+  debug:
+    var: helm_deploy.stdout_lines

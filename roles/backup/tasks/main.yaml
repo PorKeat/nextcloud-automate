@@ -1,0 +1,80 @@
+---
+- name: Extract live Nextcloud configuration from Kubernetes pod
+  command: "kubectl exec -n {{ helm_namespace }} deploy/nextcloud -- php -r \"require('/var/www/html/config/config.php'); echo json_encode(\\$CONFIG);\""
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: nextcloud_live_config_raw
+
+- name: Parse live Nextcloud configuration as JSON
+  set_fact:
+    nc_config: "{{ nextcloud_live_config_raw.stdout | from_json }}"
+
+- name: Update nextcloud_instance_id in all.yml
+  delegate_to: localhost
+  lineinfile:
+    path: group_vars/all.yaml
+    regexp: '^nextcloud_instance_id:'
+    line: 'nextcloud_instance_id: "{{ nc_config.instanceid }}"'
+
+- name: Update nextcloud_password_salt in all.yml
+  delegate_to: localhost
+  lineinfile:
+    path: group_vars/all.yaml
+    regexp: '^nextcloud_password_salt:'
+    line: 'nextcloud_password_salt: "{{ nc_config.passwordsalt }}"'
+
+- name: Update nextcloud_secret in all.yml
+  delegate_to: localhost
+  lineinfile:
+    path: group_vars/all.yaml
+    regexp: '^nextcloud_secret:'
+    line: 'nextcloud_secret: "{{ nc_config.secret }}"'
+
+- name: Update minio_bucket in all.yml
+  delegate_to: localhost
+  lineinfile:
+    path: group_vars/all.yaml
+    regexp: '^minio_bucket:'
+    line: 'minio_bucket: "{{ nc_config.objectstore.arguments.bucket }}"'
+
+- name: Update minio_access_key in all.yml
+  delegate_to: localhost
+  lineinfile:
+    path: group_vars/all.yaml
+    regexp: '^minio_access_key:'
+    line: 'minio_access_key: "{{ nc_config.objectstore.arguments.key }}"'
+
+- name: Update minio_secret_key in all.yml
+  delegate_to: localhost
+  lineinfile:
+    path: inventories/production/group_vars/all.yml
+    regexp: '^minio_secret_key:'
+    line: 'minio_secret_key: "{{ nc_config.objectstore.arguments.secret }}"'
+
+- name: Create local backup directory
+  delegate_to: localhost
+  file:
+    path: "{{ backup_dir }}"
+    state: directory
+
+- name: Backup Ansible variables locally
+  delegate_to: localhost
+  copy:
+    src: group_vars/all.yaml
+    dest: "{{ backup_dir }}/ansible_vars_backup_{{ ansible_facts['date_time']['date'] }}.yml"
+
+- name: Dump MariaDB database on remote server
+  command: "kubectl exec -i nextcloud-mariadb-0 -n {{ helm_namespace }} -- mysqldump -uroot -pmariadb-root-password-2412 nextcloud > /tmp/nextcloud_db_backup.sql"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Download Database dump to local Mac
+  fetch:
+    src: /tmp/nextcloud_db_backup.sql
+    dest: "{{ backup_dir }}/nextcloud_db_backup.sql"
+    flat: yes
+
+- name: Backup Completion Message
+  delegate_to: localhost
+  debug:
+    msg: "✅ Backup complete! Your stateless configuration and database dump are saved in {{ backup_dir }}/"

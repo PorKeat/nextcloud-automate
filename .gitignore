@@ -1,0 +1,12 @@
+# Ansible Secret Variables
+group_vars/all.yaml
+inventory.ini
+
+# Database Backups
+backups/
+
+# Helm temporary values
+/tmp/
+
+# OS generated files
+.DS_Store

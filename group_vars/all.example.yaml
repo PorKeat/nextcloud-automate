@@ -1,0 +1,24 @@
+---
+# group_vars/all.yml
+# This is the single source of truth for your Nextcloud deployment.
+# BACK UP THIS FILE CAREFULLY! It contains the keys to your MinIO vault.
+
+# Nextcloud Stateless Core Secrets
+nextcloud_instance_id: "<YOUR_INSTANCE_ID>"
+nextcloud_password_salt: "<YOUR_SALT>"
+nextcloud_secret: "<YOUR_SECRET>"
+
+# MinIO Primary Storage Settings
+minio_endpoint: "<YOUR_MINIO_ENDPOINT>"
+minio_port: 9000
+minio_bucket: "nextcloud"
+minio_access_key: "<YOUR_MINIO_USER>"
+minio_secret_key: "<YOUR_MINIO_PASS>"
+
+# Helm Deployment Settings
+helm_release_name: "nextcloud"
+helm_namespace: "nextcloud-system"
+helm_chart_version: "9.2.5" # Make sure this matches the chart you're using
+
+# Backup Configuration
+backup_dir: "/Users/alexkgm/nextcloud/nextcloud-automate/backups"

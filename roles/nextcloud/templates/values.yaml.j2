@@ -1,0 +1,104 @@
+# Ansible Managed Template: Nextcloud Stateless Architecture
+
+nextcloud:
+  host: nextcloud.sengporkeat.com
+  username: admin
+  password: Admin@Nextcloud2412
+  configs:
+    00-stateless-brain.config.php: |-
+      <?php
+      $CONFIG = array (
+        'instanceid' => '{{ nextcloud_instance_id }}',
+        'passwordsalt' => '{{ nextcloud_password_salt }}',
+        'secret' => '{{ nextcloud_secret }}',
+        'overwriteprotocol' => 'https',
+        'overwrite.cli.url' => 'https://nextcloud.sengporkeat.com',
+        'trusted_proxies' => array('10.42.0.0/16', '10.43.0.0/16', '127.0.0.1'),
+        'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
+        'maintenance_window_start' => 1,
+        'default_phone_region' => 'US',
+        'serverid' => 1,
+      );
+      
+    01-s3-primary-storage.config.php: |-
+      <?php
+      $CONFIG = array (
+        'objectstore' => array(
+          'class' => '\\OC\\Files\\ObjectStore\\S3',
+          'arguments' => array(
+            'bucket' => '{{ minio_bucket }}',
+            'autocreate' => true,
+            'key' => '{{ minio_access_key }}',
+            'secret' => '{{ minio_secret_key }}',
+            'hostname' => '{{ minio_endpoint }}',
+            'port' => {{ minio_port }},
+            'use_ssl' => false,
+            'region' => 'us-east-1',
+            'use_path_style' => true
+          )
+        )
+      );
+    02-redis.config.php: |-
+      <?php
+      $CONFIG = array (
+        'memcache.local' => '\\OC\\Memcache\\Redis',
+        'memcache.distributed' => '\\OC\\Memcache\\Redis',
+        'memcache.locking' => '\\OC\\Memcache\\Redis',
+        'redis' => array (
+          'host' => 'nextcloud-redis-master',
+          'port' => 6379,
+          'password' => 'redis-secure-pass-2412',
+        ),
+      );
+    03-security.config.php: |-
+      <?php
+      $CONFIG = array (
+        'auth.bruteforce.protection.enabled' => false,
+      );
+
+
+  postInitCommand: >
+    mkdir -p /var/www/html/data && echo "# Nextcloud data directory" > /var/www/html/data/.ncdata && chown -R www-data:www-data /var/www/html/data && su -s /bin/sh www-data -c "php occ config:app:set richdocuments wopi_allowlist --value='10.42.0.0/16,10.43.0.0/16'" && su -s /bin/sh www-data -c "php occ config:app:set user_oidc allow_multiple_user_backends --value=0"
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 8Gi
+
+redis:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnami/redis
+    tag: latest
+  auth:
+    enabled: true
+    password: "redis-secure-pass-2412"
+  master:
+    persistence:
+      enabled: false
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: nextcloud-system-nextcloud-hsts@kubernetescrd
+  tls:
+    - hosts:
+        - nextcloud.sengporkeat.com
+      secretName: nextcloud-tls-secret
+
+internalDatabase:
+  enabled: false
+
+mariadb:
+  enabled: true
+  auth:
+    rootPassword: "mariadb-root-password-2412"
+    password: "mariadb-password-2412"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
