@@ -13,4 +13,13 @@
     <dependencies>
         <nextcloud min-version="25" max-version="35"/>
     </dependencies>
+    <navigation>
+        <docs>
+            <id>unitydocs</id>
+            <name>Docs</name>
+            <route>unitydocs.page.index</route>
+            <icon>text.svg</icon>
+            <order>2</order>
+        </docs>
+    </navigation>
 </info>
