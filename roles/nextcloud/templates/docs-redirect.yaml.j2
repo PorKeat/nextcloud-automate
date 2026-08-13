@@ -1,0 +1,36 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: unitydocs-redirect
+  namespace: {{ helm_namespace }}
+spec:
+  redirectRegex:
+    regex: "^https?://docs\\.sengporkeat\\.com/(.*)"
+    replacement: "https://{{ nextcloud_domain }}/apps/unitydocs/"
+    permanent: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unitydocs-ingress
+  namespace: {{ helm_namespace }}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: {{ helm_namespace }}-unitydocs-redirect@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - docs.sengporkeat.com
+      secretName: docs-tls-secret
+  rules:
+    - host: docs.sengporkeat.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nextcloud
+                port:
+                  number: 8080
