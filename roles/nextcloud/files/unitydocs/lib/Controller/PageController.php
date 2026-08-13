@@ -43,7 +43,7 @@ class PageController extends Controller {
 
     /**
      * @NoAdminRequired
-     * @NoCSRFRequired
+     * @UseSession
      */
     public function recentDocs() {
         try {
@@ -51,47 +51,50 @@ class PageController extends Controller {
             if ($user === null) {
                 return new JSONResponse(['error' => 'Not authenticated'], 401);
             }
-            $userId = $user->getUID();
 
-            $qb = $this->db->getQueryBuilder();
-            
+            $userFolder = $this->rootFolder->getUserFolder($user->getUID());
+
             $mimetypes = [
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                 'application/vnd.oasis.opendocument.text',
                 'application/vnd.oasis.opendocument.spreadsheet',
-                'application/vnd.oasis.opendocument.presentation',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                'application/vnd.oasis.opendocument.presentation'
             ];
             
-            $orX = $qb->expr()->orX();
+            $allFiles = [];
             foreach ($mimetypes as $mime) {
-                $orX->add($qb->expr()->eq('m.mimetype', $qb->createNamedParameter($mime)));
+                $files = $userFolder->searchByMime($mime);
+                foreach ($files as $file) {
+                    $allFiles[] = $file;
+                }
             }
-            $qb->andWhere($orX)
-               ->orderBy('f.mtime', 'DESC')
-               ->setMaxResults(20);
 
-            $result = $qb->executeQuery()->fetchAllAssociative();
+            usort($allFiles, function($a, $b) {
+                return $b->getMTime() - $a->getMTime();
+            });
+
+            $allFiles = array_slice($allFiles, 0, 20);
 
             $docs = [];
-            foreach ($result as $row) {
+            foreach ($allFiles as $file) {
+                $mime = $file->getMimetype();
                 $type = 'document';
-                if (strpos($row['mimetype'], 'spreadsheet') !== false || strpos($row['mimetype'], 'sheet') !== false) {
+                if (strpos($mime, 'spreadsheet') !== false || strpos($mime, 'sheet') !== false) {
                     $type = 'spreadsheet';
-                } elseif (strpos($row['mimetype'], 'presentation') !== false || strpos($row['mimetype'], 'powerpoint') !== false) {
+                } elseif (strpos($mime, 'presentation') !== false || strpos($mime, 'powerpoint') !== false) {
                     $type = 'presentation';
                 }
 
-                $openUrl = $this->urlGenerator->linkToRouteAbsolute('richdocuments.document.index', ['fileId' => $row['fileid']]);
+                $openUrl = $this->urlGenerator->linkToRouteAbsolute('richdocuments.document.index', ['fileId' => $file->getId()]);
                 
                 $docs[] = [
-                    'fileid' => $row['fileid'],
-                    'name' => $row['name'],
-                    'path' => $row['path'],
+                    'fileid' => $file->getId(),
+                    'name' => $file->getName(),
+                    'path' => $file->getInternalPath(),
                     'type' => $type,
-                    'mtime' => $row['mtime'],
+                    'mtime' => $file->getMTime(),
                     'url' => $openUrl
                 ];
             }
