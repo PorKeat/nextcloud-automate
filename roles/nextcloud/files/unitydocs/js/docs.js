@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentView = window.UNITY_WORKSPACE_VIEW || 'doc';
 
     // Fetch recent documents for the current view
-    fetch(OC.generateUrl('/apps/unitydocs/api/recent?view=' + encodeURIComponent(currentView)))
+    const apiUrl = OC.generateUrl('/apps/unitydocs/api/recent') + '?view=' + encodeURIComponent(currentView);
+    fetch(apiUrl)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -70,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function processNextPreview() {
             if (previewQueue.length === 0) return;
             const item = previewQueue.shift();
-            const previewUrl = OC.generateUrl('/core/preview?fileId=' + item.doc.fileid + '&x=250&y=250&a=1');
+            const previewUrl = OC.generateUrl('/core/preview') + '?fileId=' + item.doc.fileid + '&x=250&y=250&a=1';
             
             const img = new Image();
             img.className = 'doc-thumbnail';
