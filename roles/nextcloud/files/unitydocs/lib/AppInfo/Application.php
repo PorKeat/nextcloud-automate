@@ -17,7 +17,7 @@ class Application extends App implements IBootstrap {
         $context->injectFn(\Closure::fromCallable([$this, 'registerNavigation']));
     }
 
-    protected function registerNavigation(\OCP\Navigation\IManager $navigationManager, \OCP\IURLGenerator $urlGenerator): void {
+    protected function registerNavigation(\OCP\NavigationManager $navigationManager, \OCP\IURLGenerator $urlGenerator): void {
         $navigationManager->add(function() use ($urlGenerator) {
             return [
                 'id' => 'unitydocs',
