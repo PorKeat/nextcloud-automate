@@ -55,6 +55,21 @@ nextcloud:
       $CONFIG = array (
         'auth.bruteforce.protection.enabled' => false,
       );
+    04-previews.config.php: |-
+      <?php
+      $CONFIG = array (
+        'enable_previews' => true,
+        'enabledPreviewProviders' => array (
+          'OC\\Preview\\PNG',
+          'OC\\Preview\\JPEG',
+          'OC\\Preview\\GIF',
+          'OC\\Preview\\BMP',
+          'OC\\Preview\\XBitmap',
+          'OC\\Preview\\MarkDown',
+          'OC\\Preview\\TXT',
+          'OCA\\Richdocuments\\Preview\\Office'
+        ),
+      );
 
 
   postInitCommand: >
