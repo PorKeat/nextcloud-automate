@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<info>
+    <id>jitsipro</id>
+    <name>Jitsi Pro Integration</name>
+    <description>A fully-featured proprietary integration connecting Nextcloud directly to Jitsi Video via API.</description>
+    <version>1.0.6</version>
+    <licence>agpl</licence>
+    <author>Proprietary</author>
+    <namespace>JitsiPro</namespace>
+    <category>social</category>
+    <dependencies>
+        <nextcloud min-version="25" max-version="35" />
+    </dependencies>
+    <settings>
+        <admin-section>OCA\JitsiPro\Settings\AdminSection</admin-section>
+        <admin>OCA\JitsiPro\Settings\Admin</admin>
+    </settings>
+</info>
