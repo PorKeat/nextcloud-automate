@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         grid.innerHTML = '';
+        let previewQueue = [];
         docs.forEach(doc => {
             const date = new Date(doc.mtime * 1000).toLocaleDateString();
             
@@ -63,7 +64,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
             grid.appendChild(card);
+            previewQueue.push({ doc: doc, card: card });
         });
+
+        function processNextPreview() {
+            if (previewQueue.length === 0) return;
+            const item = previewQueue.shift();
+            const previewUrl = OC.generateUrl('/core/preview?fileId=' + item.doc.fileid + '&x=250&y=250&a=1');
+            
+            const img = new Image();
+            img.className = 'doc-thumbnail';
+            
+            img.onload = function() {
+                const previewDiv = item.card.querySelector('.doc-preview');
+                if (previewDiv) {
+                    previewDiv.innerHTML = '';
+                    previewDiv.appendChild(img);
+                }
+                processNextPreview();
+            };
+            
+            img.onerror = function() {
+                processNextPreview();
+            };
+            
+            img.src = previewUrl;
+        }
+
+        // Run 2 preview requests concurrently to prevent server overload
+        processNextPreview();
+        if (previewQueue.length > 0) {
+            processNextPreview();
+        }
     }
 
     // Template click handlers
