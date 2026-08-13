@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const grid = document.getElementById('docs-grid');
+    const currentView = window.UNITY_WORKSPACE_VIEW || 'doc';
 
-    // Fetch recent documents
-    fetch(OC.generateUrl('/apps/unitydocs/api/recent'))
+    // Fetch recent documents for the current view
+    fetch(OC.generateUrl('/apps/unitydocs/api/recent?view=' + encodeURIComponent(currentView)))
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -17,11 +18,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getIconSvg(type) {
         if (type === 'spreadsheet') {
-            return '<svg viewBox="0 0 24 24"><path fill="#1e8e3e" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M9,13H15V15H9V13Z"/></svg>';
+            return '<svg viewBox="0 0 24 24" class="fallback-icon"><path fill="#0F9D58" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M9,13H15V15H9V13Z"/></svg>';
         } else if (type === 'presentation') {
-            return '<svg viewBox="0 0 24 24"><path fill="#e37400" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M8,11H16V13H8V11Z"/></svg>';
+            return '<svg viewBox="0 0 24 24" class="fallback-icon"><path fill="#F4B400" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M8,11H16V13H8V11Z"/></svg>';
+        } else if (type === 'diagram') {
+            return '<svg viewBox="0 0 24 24" class="fallback-icon"><path fill="#DB4437" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>';
         } else {
-            return '<svg viewBox="0 0 24 24"><path fill="#1a73e8" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M11,11V10H13V11H11M11,13V12H13V13H11M11,15V14H13V15H11M11,17V16H13V17H11Z"/></svg>';
+            return '<svg viewBox="0 0 24 24" class="fallback-icon"><path fill="#4285F4" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M11,11V10H13V11H11M11,13V12H13V13H11M11,15V14H13V15H11M11,17V16H13V17H11Z"/></svg>';
         }
     }
 
@@ -44,17 +47,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 url += '&requesttoken=' + encodeURIComponent(OC.requestToken);
             }
             card.href = url;
-            // Nextcloud handles opening files through the standard file viewer mechanism
-            // If richdocuments is installed, it will automatically hijack this and open the editor
+            
+            // Generate the native Nextcloud thumbnail URL
+            const previewUrl = OC.generateUrl('/core/preview?fileId=' + doc.fileid + '&x=250&y=250&a=1');
+            const fallbackIcon = getIconSvg(doc.type);
+            
+            // If the image fails to load, it will instantly fallback to the SVG icon
+            const fallbackHtml = fallbackIcon.replace(/"/g, "&quot;");
 
             card.innerHTML = `
                 <div class="doc-preview">
-                    ${getIconSvg(doc.type)}
+                    <img src="${previewUrl}" class="doc-thumbnail" onerror="this.onerror=null; this.parentNode.innerHTML='${fallbackHtml}';" />
                 </div>
                 <div class="doc-info">
-                    <div class="doc-name" title="${doc.name}">${doc.name}</div>
+                    <div class="doc-name" title="${doc.name}">${doc.name.replace(/\.[^/.]+$/, "")}</div>
                     <div class="doc-meta">
-                        <svg style="width:14px;height:14px;" viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.28,15.28L11,10V5H12.5V9.38L17.34,14.22L16.28,15.28Z"/></svg>
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.28,15.28L11,10V5H12.5V9.38L17.34,14.22L16.28,15.28Z"/></svg>
                         Opened ${date}
                     </div>
                 </div>
@@ -66,11 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Template click handlers
     document.querySelectorAll('.template-card').forEach(card => {
         card.addEventListener('click', function() {
-            const action = this.getAttribute('data-action');
-            let type = 'document';
-            if (action === 'new-sheet') type = 'spreadsheet';
-            if (action === 'new-slide') type = 'presentation';
-
             this.style.opacity = '0.5';
 
             fetch(OC.generateUrl('/apps/unitydocs/api/create'), {
@@ -79,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'requesttoken': OC.requestToken
                 },
-                body: JSON.stringify({ type: type })
+                body: JSON.stringify({ type: currentView })
             })
             .then(response => response.json())
             .then(data => {

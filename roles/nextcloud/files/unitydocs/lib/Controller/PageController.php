@@ -38,7 +38,8 @@ class PageController extends Controller {
      * @NoCSRFRequired
      */
     public function index() {
-        return new TemplateResponse('unitydocs', 'index');
+        $view = $this->request->getParam('view', 'doc');
+        return new TemplateResponse('unitydocs', 'index', ['view' => $view]);
     }
 
     /**
@@ -51,17 +52,32 @@ class PageController extends Controller {
             if ($user === null) {
                 return new JSONResponse(['error' => 'Not authenticated'], 401);
             }
-
+            
             $userFolder = $this->rootFolder->getUserFolder($user->getUID());
 
-            $mimetypes = [
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'application/vnd.oasis.opendocument.text',
-                'application/vnd.oasis.opendocument.spreadsheet',
-                'application/vnd.oasis.opendocument.presentation'
-            ];
+            $view = $this->request->getParam('view', 'doc');
+
+            $mimetypes = [];
+            if ($view === 'sheet') {
+                $mimetypes = [
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/vnd.oasis.opendocument.spreadsheet'
+                ];
+            } elseif ($view === 'slide') {
+                $mimetypes = [
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    'application/vnd.oasis.opendocument.presentation'
+                ];
+            } elseif ($view === 'diagram') {
+                $mimetypes = [
+                    'application/vnd.oasis.opendocument.graphics'
+                ];
+            } else { // doc
+                $mimetypes = [
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.oasis.opendocument.text'
+                ];
+            }
             
             $allFiles = [];
             foreach ($mimetypes as $mime) {
@@ -131,12 +147,15 @@ class PageController extends Controller {
             $ext = 'docx';
             $prefix = 'Untitled Document';
             
-            if ($type === 'spreadsheet') {
+            if ($type === 'sheet' || $type === 'spreadsheet') {
                 $ext = 'xlsx';
                 $prefix = 'Untitled Spreadsheet';
-            } elseif ($type === 'presentation') {
+            } elseif ($type === 'slide' || $type === 'presentation') {
                 $ext = 'pptx';
                 $prefix = 'Untitled Presentation';
+            } elseif ($type === 'diagram') {
+                $ext = 'odg';
+                $prefix = 'Untitled Diagram';
             }
 
             $templatePath = '/var/www/html/custom_apps/richdocuments/emptyTemplates/template.' . $ext;
