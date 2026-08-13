@@ -15,4 +15,13 @@
         <admin-section>OCA\JitsiPro\Settings\AdminSection</admin-section>
         <admin>OCA\JitsiPro\Settings\Admin</admin>
     </settings>
+    <navigation>
+        <jitsipro>
+            <id>jitsipro</id>
+            <name>Video Call</name>
+            <route>jitsipro.page.index</route>
+            <icon>app.svg</icon>
+            <order>10</order>
+        </jitsipro>
+    </navigation>
 </info>
