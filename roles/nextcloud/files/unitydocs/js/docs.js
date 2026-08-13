@@ -48,16 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             card.href = url;
             
-            // Generate the native Nextcloud thumbnail URL
-            const previewUrl = OC.generateUrl('/core/preview?fileId=' + doc.fileid + '&x=250&y=250&a=1');
             const fallbackIcon = getIconSvg(doc.type);
-            
-            // If the image fails to load, it will instantly fallback to the SVG icon
-            const fallbackHtml = fallbackIcon.replace(/"/g, "&quot;");
 
             card.innerHTML = `
                 <div class="doc-preview">
-                    <img src="${previewUrl}" class="doc-thumbnail" onerror="this.onerror=null; this.parentNode.innerHTML='${fallbackHtml}';" />
+                    ${fallbackIcon}
                 </div>
                 <div class="doc-info">
                     <div class="doc-name" title="${doc.name}">${doc.name.replace(/\.[^/.]+$/, "")}</div>
