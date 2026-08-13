@@ -5,7 +5,7 @@
     <name>Unity Docs</name>
     <summary>Unity Workspace Documents Dashboard</summary>
     <description>Provides a dedicated Google Docs-style dashboard for managing and creating documents.</description>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <licence>agpl</licence>
     <author>Seng Porkeat</author>
     <namespace>UnityDocs</namespace>

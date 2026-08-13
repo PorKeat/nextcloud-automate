@@ -104,7 +104,7 @@ class PageController extends Controller {
                     $type = 'presentation';
                 }
 
-                $openUrl = $this->urlGenerator->getBaseUrl() . '/index.php/f/' . $file->getId();
+                $openUrl = $this->urlGenerator->getBaseUrl() . '/index.php/apps/richdocuments/index?fileId=' . $file->getId();
                 
                 $docs[] = [
                     'fileid' => $file->getId(),
@@ -180,7 +180,7 @@ class PageController extends Controller {
             $newFile = $userFolder->newFile($filename);
             $newFile->putContent($content);
 
-            $openUrl = $this->urlGenerator->getBaseUrl() . '/index.php/f/' . $newFile->getId();
+            $openUrl = $this->urlGenerator->getBaseUrl() . '/index.php/apps/richdocuments/index?fileId=' . $newFile->getId();
 
             return new JSONResponse([
                 'status' => 'success',
