@@ -1,0 +1,155 @@
+#app-content {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+#unitydocs-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.docs-header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 40px;
+}
+
+.docs-header h2 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #3c4043;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.docs-templates {
+    display: flex;
+    gap: 20px;
+}
+
+.template-card {
+    width: 140px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.template-card:hover {
+    transform: translateY(-2px);
+}
+
+.template-icon {
+    width: 140px;
+    height: 180px;
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+}
+
+.template-card:hover .template-icon {
+    border-color: #1a73e8;
+}
+
+.template-icon svg {
+    width: 48px;
+    height: 48px;
+}
+
+.template-icon.blue { color: #1a73e8; }
+.template-icon.green { color: #1e8e3e; }
+.template-icon.orange { color: #e37400; }
+
+.template-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #3c4043;
+    text-align: center;
+}
+
+.docs-recent h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #3c4043;
+    margin-bottom: 20px;
+}
+
+.docs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.doc-card {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    text-decoration: none;
+    display: block;
+}
+
+.doc-card:hover {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-color: #1a73e8;
+}
+
+.doc-preview {
+    height: 120px;
+    background: #f1f3f4;
+    border-bottom: 1px solid #dadce0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9aa0a6;
+}
+
+.doc-preview svg {
+    width: 40px;
+    height: 40px;
+}
+
+.doc-info {
+    padding: 12px 15px;
+}
+
+.doc-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #3c4043;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doc-meta {
+    font-size: 12px;
+    color: #5f6368;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.docs-loading, .docs-error {
+    grid-column: 1 / -1;
+    padding: 40px;
+    text-align: center;
+    color: #5f6368;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #dadce0;
+}
+
+.docs-error {
+    color: #d93025;
+}

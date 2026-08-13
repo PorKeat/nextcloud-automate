@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>unitydocs</id>
+    <name>Unity Docs</name>
+    <summary>Unity Workspace Documents Dashboard</summary>
+    <description>Provides a dedicated Google Docs-style dashboard for managing and creating documents.</description>
+    <version>1.0.0</version>
+    <licence>agpl</licence>
+    <author>Alex</author>
+    <namespace>UnityDocs</namespace>
+    <category>office</category>
+    <dependencies>
+        <nextcloud min-version="25" max-version="35"/>
+    </dependencies>
+</info>
