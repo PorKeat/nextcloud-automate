@@ -61,7 +61,33 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.template-card').forEach(card => {
         card.addEventListener('click', function() {
             const action = this.getAttribute('data-action');
-            alert('Template creation requires the Nextcloud Office (richdocuments) template generator endpoint to be exposed. For now, please create new documents in the Files app.');
+            let type = 'document';
+            if (action === 'new-sheet') type = 'spreadsheet';
+            if (action === 'new-slide') type = 'presentation';
+
+            this.style.opacity = '0.5';
+
+            fetch(OC.generateUrl('/apps/unitydocs/api/create'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'requesttoken': OC.requestToken
+                },
+                body: JSON.stringify({ type: type })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = data.url;
+                } else {
+                    alert('Error creating document: ' + (data.message || 'Unknown error'));
+                    this.style.opacity = '1';
+                }
+            })
+            .catch(err => {
+                alert('Network error: ' + err.message);
+                this.style.opacity = '1';
+            });
         });
     });
 });
