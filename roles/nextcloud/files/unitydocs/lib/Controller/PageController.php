@@ -93,7 +93,7 @@ class PageController extends Controller {
                     $type = 'presentation';
                 }
 
-                $openUrl = $this->urlGenerator->linkToRouteAbsolute('files.view.index', ['dir' => dirname($path) === '.' ? '/' : '/' . dirname($path), 'openfile' => $row['fileid']]);
+                $openUrl = $this->urlGenerator->linkToRouteAbsolute('richdocuments.document.index', ['fileId' => $row['fileid']]);
                 
                 $docs[] = [
                     'fileid' => $row['fileid'],
@@ -163,7 +163,7 @@ class PageController extends Controller {
             $newFile = $userFolder->newFile($filename);
             $newFile->putContent($content);
 
-            $openUrl = $this->urlGenerator->linkToRouteAbsolute('files.view.index', ['dir' => '/', 'openfile' => $newFile->getId()]);
+            $openUrl = $this->urlGenerator->linkToRouteAbsolute('richdocuments.document.index', ['fileId' => $newFile->getId()]);
 
             return new JSONResponse([
                 'status' => 'success',
