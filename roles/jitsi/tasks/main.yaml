@@ -1,0 +1,43 @@
+---
+- name: Create namespace for Jitsi
+  shell: "kubectl create namespace jitsi --dry-run=client -o yaml | kubectl apply -f -"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+
+- name: Add Jitsi Helm chart repository
+  command: "helm repo add jitsi https://jitsi-contrib.github.io/jitsi-helm/"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+
+- name: Update Jitsi Helm chart repositories
+  command: helm repo update jitsi
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+
+- name: Template Jitsi Helm Values
+  template:
+    src: values.yaml.j2
+    dest: /tmp/jitsi_values.yaml
+    mode: '0644'
+
+- name: Template Jitsi Traefik Middleware
+  template:
+    src: middleware.yaml.j2
+    dest: /tmp/jitsi_middleware.yaml
+    mode: '0644'
+
+- name: Apply Jitsi Traefik Middleware
+  command: kubectl apply -f /tmp/jitsi_middleware.yaml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Deploy Jitsi via Helm
+  command: >
+    helm upgrade --install jitsi jitsi/jitsi-meet
+    --namespace {{ helm_namespace }}
+    -f /tmp/jitsi_values.yaml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml

@@ -1,0 +1,10 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: jitsi-iframe-allow
+  namespace: jitsi
+spec:
+  headers:
+    customResponseHeaders:
+      X-Frame-Options: ""
+      Content-Security-Policy: "frame-ancestors 'self' https://{{ nextcloud_domain }}"

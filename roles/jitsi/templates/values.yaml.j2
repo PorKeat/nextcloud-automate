@@ -1,0 +1,50 @@
+# Jitsi Meet Helm Values Configuration
+# Public URL configuration
+publicURL: "https://{{ jitsi_domain }}"
+
+# Web Component Configuration (NGINX front-end)
+web:
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.middlewares: jitsi-jitsi-iframe-allow@kubernetescrd
+    hosts:
+      - host: "{{ jitsi_domain }}"
+        paths:
+          - "/"
+    # Assuming the cluster uses Traefik or Cert-Manager for TLS
+    tls:
+      - secretName: jitsi-tls
+        hosts:
+          - "{{ jitsi_domain }}"
+
+# Jicofo (Conference focus component)
+jicofo:
+  xmpp:
+    password: "generate_a_strong_jicofo_password"
+
+# Jitsi Videobridge (JVB - The heavy lifter for video)
+jvb:
+  # Crucial: This configures the video bridge to use a NodePort so it can 
+  # directly receive the UDP 10000 traffic from the clients.
+  service:
+    type: NodePort
+  xmpp:
+    password: "generate_a_strong_jvb_password"
+  publicIPs:
+    - "{{ ansible_host }}"
+
+# Prosody (XMPP server for signaling)
+prosody:
+  # Enable Let's Encrypt generation if the helm chart supports it out of the box,
+  # or rely on the ingress controller. We are relying on the ingress controller.
+  auth:
+    type: "jwt" # Nextcloud integration requires JWT authentication eventually, but for now we set it up generally.
+    # JWT configuration would go here if tightly coupled, but standard deployment allows general access first.
+    # For a basic secure setup, we can leave auth as standard anonymous for testing, but let's prep for Nextcloud.
+  
+# Enable extra features
+jibri:
+  enabled: false # Disabling recording/broadcasting to save massive CPU resources unless needed.

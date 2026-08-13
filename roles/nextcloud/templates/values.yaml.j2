@@ -1,7 +1,7 @@
 # Ansible Managed Template: Nextcloud Stateless Architecture
 
 nextcloud:
-  host: nextcloud.sengporkeat.com
+  host: {{ nextcloud_domain }}
   username: admin
   password: Admin@Nextcloud2412
   configs:
@@ -12,7 +12,7 @@ nextcloud:
         'passwordsalt' => '{{ nextcloud_password_salt }}',
         'secret' => '{{ nextcloud_secret }}',
         'overwriteprotocol' => 'https',
-        'overwrite.cli.url' => 'https://nextcloud.sengporkeat.com',
+        'overwrite.cli.url' => 'https://{{ nextcloud_domain }}',
         'trusted_proxies' => array('10.42.0.0/16', '10.43.0.0/16', '127.0.0.1'),
         'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
         'maintenance_window_start' => 1,
@@ -87,7 +87,7 @@ ingress:
     traefik.ingress.kubernetes.io/router.middlewares: nextcloud-system-nextcloud-hsts@kubernetescrd
   tls:
     - hosts:
-        - nextcloud.sengporkeat.com
+        - {{ nextcloud_domain }}
       secretName: nextcloud-tls-secret
 
 internalDatabase:

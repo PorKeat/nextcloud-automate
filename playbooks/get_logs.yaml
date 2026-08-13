@@ -1,0 +1,15 @@
+---
+- name: Fetch Nextcloud logs
+  hosts: k3s_cluster
+  tasks:
+    - name: Get pod name
+      shell: "KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl get pod -n nextcloud-system -l app.kubernetes.io/name=nextcloud -o jsonpath='{.items[0].metadata.name}'"
+      register: pod_name
+
+    - name: Fetch log content
+      shell: "KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl exec -n nextcloud-system {{ pod_name.stdout }} -- tail -n 50 /var/www/html/data/nextcloud.log"
+      register: log_content
+
+    - name: Display log
+      debug:
+        var: log_content.stdout_lines
