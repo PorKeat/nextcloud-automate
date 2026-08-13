@@ -44,6 +44,7 @@ class PageController extends Controller {
 
     /**
      * @NoAdminRequired
+     * @NoCSRFRequired
      * @UseSession
      */
     public function recentDocs() {
@@ -135,6 +136,8 @@ class PageController extends Controller {
 
     /**
      * @NoAdminRequired
+     * @NoCSRFRequired
+     * @UseSession
      */
     public function createDoc() {
         try {
