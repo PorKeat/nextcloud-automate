@@ -4,10 +4,11 @@ use OCP\Util;
 $currentView = isset($_['view']) ? $_['view'] : 'doc';
 $appVersion = time(); // Use timestamp as ultimate cache buster
 $urlGenerator = \OC::$server->get(\OCP\IURLGenerator::class);
+$nonce = \OC::$server->getContentSecurityPolicyNonceManager()->getNonce();
 ?>
 <link rel="stylesheet" href="<?php p($urlGenerator->linkTo('unitydocs', 'css/docs.css')); ?>?v=<?php p($appVersion); ?>">
-<script src="<?php p($urlGenerator->linkTo('unitydocs', 'js/docs.js')); ?>?v=<?php p($appVersion); ?>"></script>
-<script>
+<script nonce="<?php p($nonce); ?>" src="<?php p($urlGenerator->linkTo('unitydocs', 'js/docs.js')); ?>?v=<?php p($appVersion); ?>"></script>
+<script nonce="<?php p($nonce); ?>">
     window.UNITY_WORKSPACE_VIEW = '<?php p($currentView); ?>';
 </script>
 
