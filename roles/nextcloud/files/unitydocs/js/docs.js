@@ -37,7 +37,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const card = document.createElement('a');
             card.className = 'doc-card';
-            card.href = doc.url;
+            let url = doc.url;
+            if (url.indexOf('?') === -1) {
+                url += '?requesttoken=' + encodeURIComponent(OC.requestToken);
+            } else {
+                url += '&requesttoken=' + encodeURIComponent(OC.requestToken);
+            }
+            card.href = url;
             // Nextcloud handles opening files through the standard file viewer mechanism
             // If richdocuments is installed, it will automatically hijack this and open the editor
 
@@ -78,7 +84,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    window.location.href = data.url;
+                    let url = data.url;
+                    if (url.indexOf('?') === -1) {
+                        url += '?requesttoken=' + encodeURIComponent(OC.requestToken);
+                    } else {
+                        url += '&requesttoken=' + encodeURIComponent(OC.requestToken);
+                    }
+                    window.location.href = url;
                 } else {
                     alert('Error creating document: ' + (data.message || 'Unknown error'));
                     this.style.opacity = '1';
