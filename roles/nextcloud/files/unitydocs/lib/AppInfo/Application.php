@@ -14,10 +14,14 @@ class Application extends App implements IBootstrap {
     }
 
     public function boot(IBootContext $context): void {
-        $context->injectFn(\Closure::fromCallable([$this, 'registerNavigation']));
+        $this->registerNavigation();
     }
 
-    protected function registerNavigation(\OCP\NavigationManager $navigationManager, \OCP\IURLGenerator $urlGenerator): void {
+    protected function registerNavigation(): void {
+        $server = \OC::$server;
+        $navigationManager = $server->getNavigationManager();
+        $urlGenerator = $server->getURLGenerator();
+        
         $navigationManager->add(function() use ($urlGenerator) {
             return [
                 'id' => 'unitydocs',
