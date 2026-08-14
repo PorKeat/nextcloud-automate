@@ -1,0 +1,16 @@
+---
+- name: Ensure collabora namespace exists
+  shell: "kubectl create namespace collabora --dry-run=client -o yaml | kubectl apply -f -"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+
+- name: Transfer Collabora deployment manifest
+  template:
+    src: deploy.yaml.j2
+    dest: /tmp/collabora-deploy.yaml
+
+- name: Apply Collabora deployment
+  shell: "kubectl apply -f /tmp/collabora-deploy.yaml -n collabora"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml

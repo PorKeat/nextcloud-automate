@@ -1,0 +1,16 @@
+---
+- name: Ensure euro-office namespace exists
+  shell: "kubectl create namespace euro-office --dry-run=client -o yaml | kubectl apply -f -"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+
+- name: Transfer Euro-Office deployment manifest
+  template:
+    src: deploy.yaml.j2
+    dest: /tmp/euro-office-deploy.yaml
+
+- name: Apply Euro-Office deployment
+  shell: "kubectl apply -f /tmp/euro-office-deploy.yaml -n euro-office"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml

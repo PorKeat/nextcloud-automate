@@ -1,0 +1,78 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: euro-office
+  labels:
+    app: euro-office
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: euro-office
+  template:
+    metadata:
+      labels:
+        app: euro-office
+    spec:
+      containers:
+      - name: euro-office
+        image: multiarch/euro-office:latest
+        env:
+        - name: JWT_ENABLED
+          value: "true"
+        - name: JWT_SECRET
+          value: "eurooffice_secret_key_123"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: euro-office
+spec:
+  selector:
+    app: euro-office
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-euro-office
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@sengporkeat.com
+    privateKeySecretRef:
+      name: letsencrypt-euro-office-account-key
+    solvers:
+    - http01:
+        ingress:
+          class: traefik
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: euro-office
+  annotations:
+    cert-manager.io/issuer: "letsencrypt-euro-office"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - eurooffice.sengporkeat.com
+    secretName: euro-office-tls
+  rules:
+  - host: eurooffice.sengporkeat.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: euro-office
+            port:
+              number: 80

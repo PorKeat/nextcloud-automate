@@ -30,39 +30,7 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Disable and remove the buggy custom app
-  shell: |
-    POD_NAME=$(kubectl get pod -n {{ helm_namespace }} -l app.kubernetes.io/name=nextcloud -o jsonpath="{.items[0].metadata.name}")
-    kubectl exec -n {{ helm_namespace }} $POD_NAME -- su -s /bin/sh www-data -c "php occ app:disable jitsilink || true"
-    kubectl exec -n {{ helm_namespace }} $POD_NAME -- rm -rf /var/www/html/custom_apps/jitsilink
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Copy custom apps to remote host
-  copy:
-    src: "{{ item }}"
-    dest: /tmp/
-    mode: '0755'
-  loop:
-    - jitsipro
-    - unitydocs
-
-- name: Inject custom apps into Nextcloud Pod
-  shell: |
-    POD_NAME=$(kubectl get pod -n {{ helm_namespace }} -l app.kubernetes.io/name=nextcloud -o jsonpath="{.items[0].metadata.name}")
-    kubectl cp /tmp/jitsipro {{ helm_namespace }}/$POD_NAME:/var/www/html/custom_apps/
-    kubectl cp /tmp/unitydocs {{ helm_namespace }}/$POD_NAME:/var/www/html/custom_apps/
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-
-- name: Enable custom apps and upgrade database
-  shell: |
-    POD_NAME=$(kubectl get pod -n {{ helm_namespace }} -l app.kubernetes.io/name=nextcloud -o jsonpath="{.items[0].metadata.name}")
-    kubectl exec -n {{ helm_namespace }} $POD_NAME -- su -s /bin/sh www-data -c "php occ app:enable jitsipro"
-    kubectl exec -n {{ helm_namespace }} $POD_NAME -- su -s /bin/sh www-data -c "php occ app:enable unitydocs"
-    kubectl exec -n {{ helm_namespace }} $POD_NAME -- su -s /bin/sh www-data -c "php occ upgrade || true"
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
 - name: Restart Nextcloud Pod to clear PHP Opcache
   shell: |
